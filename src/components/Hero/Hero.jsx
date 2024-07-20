@@ -4,6 +4,8 @@ import HeroRight from "../../assets/hero-right.png";
 import ReferralProcess from "../ReferralProcess";
 import ReferralBenefits from "../ReferralBenefits";
 import { FaRegWindowClose } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { Spinner } from "react-bootstrap"
 
 function Hero() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,6 +16,8 @@ function Hero() {
     refereeEmail: "",
     courseName: "",
   });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -23,15 +27,75 @@ function Hero() {
     setIsModalOpen(false);
   };
 
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    const {
+      referrerName,
+      referrerEmail,
+      refereeName,
+      refereeEmail,
+      courseName,
+    } = formData;
+
+    if (!referrerName.trim())
+      newErrors.referrerName = "Referrer Name is required";
+    if (!referrerEmail.trim() || !validateEmail(referrerEmail))
+      newErrors.referrerEmail = "Valid Referrer Email is required";
+    if (!refereeName.trim()) newErrors.refereeName = "Referee Name is required";
+    if (!refereeEmail.trim() || !validateEmail(refereeEmail))
+      newErrors.refereeEmail = "Valid Referee Email is required";
+    if (!courseName.trim()) newErrors.courseName = "Course Name is required";
+
+    return newErrors;
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add form validation and submission logic here
-    console.log(formData);
-    setIsModalOpen(false);
+
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/referrals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setIsModalOpen(false);
+        setFormData({
+          referrerName: "",
+          referrerEmail: "",
+          refereeName: "",
+          refereeEmail: "",
+          courseName: "",
+        });
+        setErrors({});
+        return toast.success(data.message);
+      } else {
+        return toast.error("Failed to submit referral:", data.error);
+      }
+    } catch (error) {
+      console.error("Error submitting referral:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -105,6 +169,7 @@ function Hero() {
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50"
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="flex gap-3 items-center justify-between mb-4">
@@ -118,6 +183,7 @@ function Hero() {
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50"
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="flex gap-3 items-center justify-between mb-4">
@@ -131,6 +197,7 @@ function Hero() {
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50"
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="flex gap-3 items-center justify-between mb-4">
@@ -144,6 +211,7 @@ function Hero() {
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50"
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="flex gap-3 items-center justify-between mb-4">
@@ -157,14 +225,23 @@ function Hero() {
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50"
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="flex justify-between px-10 mt-6">
                 <button
                   type="submit"
                   className="px-8 py-2 bg-blue-600 hover:scale-95 transition-all duration-200 text-white rounded"
+                  disabled={loading}
                 >
-                  Submit
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <Spinner animation="border" size="sm" className="mr-2" />
+                      Submitting...
+                    </span>
+                  ) : (
+                    "Submit"
+                  )}
                 </button>
                 <button
                   type="button"

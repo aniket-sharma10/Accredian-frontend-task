@@ -1,21 +1,24 @@
 // src/App.jsx
-import React from 'react';
-import Header from './components/Header/Header';
-import Hero from './components/Hero/Hero';
-import FAQs from './components/FAQs/FAQs';
-import Footer from './components/Footer/Footer';
+import React from "react";
+import Header from "./components/Header/Header";
+import Hero from "./components/Hero/Hero";
+import FAQs from "./components/FAQs/FAQs";
+import Footer from "./components/Footer/Footer";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
-  
-
-  return(
-    <div>
-      <Header />
-      <Hero />
-      <FAQs />
-      <Footer />
-    </div>
-  )
+  return (
+    <>
+    <ToastContainer />
+      <div>
+        <Header />
+        <Hero />
+        <FAQs />
+        <Footer />
+      </div>
+    </>
+  );
 };
 
 export default App;
